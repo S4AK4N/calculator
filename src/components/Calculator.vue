@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue'
 
-// 表示用変数(リアクティブ)
 const display = ref('');
+const history = ref<{ id: number; expression: string; result: string }[]>([]);
 
 // 数字や演算子が押された時の処理
 const handleClick = (value: string) => {
@@ -10,19 +10,32 @@ const handleClick = (value: string) => {
 };
 
 // 計算関数
-const calculate = () => {
-  // 計算失敗を網羅的にキャッチ
+const calculate = async () => {
   try {
-    display.value = eval(display.value).toString(); // evalで計算
+    const result = eval(display.value).toString();
+
+    // 結果をサーバに保存
+    await fetch('http://localhost:3000/calculations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expression: display.value, result }),
+    });
+
+    display.value = result;
+    fetchHistory();
   } catch (e) {
     display.value = '計算失敗';
   }
 };
 
-// クリア関数
-const clear = () => {
-  display.value = '';
+// モックサーバから履歴を取得
+const fetchHistory = async () => {
+  const res = await fetch('http://localhost:3000/calculations');
+  history.value = await res.json();
 };
+
+// 初回読み込み時に履歴を取得
+onMounted(fetchHistory);
 </script>
 
 <template>
@@ -50,9 +63,16 @@ const clear = () => {
     <div>
       <button @click="handleClick('0')">0</button>
       <button @click="calculate">=</button>
-      <button @click="clear">C</button>
+      <button @click="display = ''">C</button>
       <button @click="handleClick('/')">/</button>
     </div>
+
+    <h2>履歴</h2>
+    <ul>
+      <li v-for="item in history" :key="item.id">
+        {{ item.expression }} = {{ item.result }}
+      </li>
+    </ul>
   </div>
 </template>
 

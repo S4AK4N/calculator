@@ -1,0 +1,19 @@
+{
+  "calculations": [
+    {
+      "id": "5acb",
+      "expression": "22225*9",
+      "result": "200025"
+    },
+    {
+      "id": "775d",
+      "expression": "98-66",
+      "result": "32"
+    },
+    {
+      "id": "7df7",
+      "expression": "32998",
+      "result": "32998"
+    }
+  ]
+}
